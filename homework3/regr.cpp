@@ -18,30 +18,34 @@ template <typename T> T multiply(const T & X, const T & Y){
     std::transform( X.begin(), X.end(), Y.begin(), product.begin(), [](const auto a, const auto b){return a*b;});
     return product;
 }
-
-
+template <typename T>
+auto sq(const T x){
+    return x*x;
+}
 
 template <typename T> auto regression( T const &X, T const &Y){
-    size_t size = X.size();
     double xAvg = average(X);
     double yAvg = average(Y);
-    std::vector<double> xNormed, yNormed; 
-    xNormed.resize(size);
-    yNormed.resize(size);
-    //subtracting average values
-    std::transform(X.begin(), X.end(), xNormed.begin(), [xAvg](const auto a){return a - xAvg;});
-    std::transform(Y.begin(), Y.end(), yNormed.begin(), [yAvg](const auto a){return a - yAvg;});
     //computing the numerator and denominator of m
-    double numerator = std::inner_product(xNormed.begin(), xNormed.end(), yNormed.begin(), 0.0);
-    double denominator = std::inner_product(xNormed.begin(), xNormed.end(), xNormed.begin(), 0.0);
+    double numerator = std::inner_product (X.begin(), X.end(), Y.begin(), 0.0, std::plus<double>(), 
+                [xAvg, yAvg](const auto x, const auto y){return (x - xAvg) * (y - yAvg);});
+    double denominator = std::inner_product (X.begin(), X.end(), X.begin(), 0.0, std::plus<double>(),
+                        [xAvg]( const auto x, const auto y){return (x - xAvg) * (y - xAvg);});
     double m = numerator / denominator;
     double b = yAvg - m * xAvg;
 
     //computing rsqr
-    double xyAvg = average(multiply(X, Y));
-    double xxAvg = average(multiply(X, X));
-    double yyAvg = average(multiply(Y, Y));
-    double rsq = ( xyAvg - xAvg * yAvg ) * ( xyAvg - xAvg * yAvg ) / ((xxAvg - xAvg * xAvg) * (yyAvg - yAvg * yAvg));
+    double rsqDenominator = std::sqrt(std::accumulate(X.begin(),
+                            X.end(),
+                            0.0,
+                            [xAvg](auto a, auto const x){return a + sq(x - xAvg);})
+                        *
+                        std::accumulate(Y.begin(),
+                            Y.end(),
+                            0.0,
+                            [yAvg](auto a, auto const x){return a + sq(x - yAvg);}));
+
+    double rsq = numerator / rsqDenominator;
     return std::array<double, 3> {m, b, rsq};
 }
 
