@@ -1,3 +1,5 @@
+
+#pragma once
 #include <iostream>
 #include <cmath>
 
@@ -47,7 +49,7 @@ Vector2d<T> operator*( const T scalar, const Vector2d<T> & b) {
 }
 template<typename T>
 Vector2d<T> operator*( const Vector2d<T> & b, const T scalar ) {
-    return Vector2d<T>{ scalar * b.x, scalar * b.y };
+    return Vector2d<T>{ b.x * scalar,  b.y * scalar };
 }
 
 template<typename T>
@@ -56,18 +58,18 @@ Vector2d<T> operator/( const Vector2d<T> & b, const T scalar ){
 }
 
 template<typename T>
-double dot(const Vector2d<T> & a, const Vector2d<T> & b) { //Skalar szorzat legyen valos. 
+T dot(const Vector2d<T> & a, const Vector2d<T> & b) { //Skalar szorzat legyen valos. 
     return a.x * b.x + a.y * b.y;
 }
 
 template<typename T>
-double sqlength(const Vector2d<T> & a){
+T sqlength(const Vector2d<T> & a){
     return dot<T>(a, a);
 }
 
 
 template<typename T>
-double length(const Vector2d<T> & a){
+T length(const Vector2d<T> & a){
     return std::sqrt(sqlength<T>(a));
 }
 
