@@ -30,11 +30,6 @@ inline auto sub = [](auto const& x, auto const& y){ return x - y; };
 inline auto sq = [](auto const& x){ return x * x  ; };
 
 
-//Large Vector class:
-//Assumptions:
-//Implements a heap allocated mathematical vector
-//Elements are copyable and need not to be move-aware
-//No exceptional cases are not handled
 template<typename T>
 class matrix
 {
