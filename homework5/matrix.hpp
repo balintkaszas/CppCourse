@@ -49,14 +49,14 @@ class matrix
     template<typename F>
 	matrix(Idx1, int n, F f) // linear construction from f function
 	{
-		data.resize(n);
-		for(int i=0; i<n; ++i){ data[i] = f(i); }
+		data.resize(sq(n));
+		for(int i=0; i<sq(n); ++i){ data[i] = f(i); }
         N = n;
     }
 
 	template<typename F>
 	matrix(Idx2, int n, F f){ //2 index construction 
-		data.resize(n);
+		data.resize(sq(n));
 		for(int i=0; i<n; ++i){ 
                 for(int j=0; j<n ; ++j){
                     data[i*n+j] = f(i,j);
@@ -70,6 +70,10 @@ class matrix
 	matrix( matrix const& ) = default; //copy const
 	matrix( matrix && ) = default; //move const
     matrix(int n, std::initializer_list<T> const& il):    data{il}, N{n}{};
+	matrix(int n) { //empty constructor
+		data.resize(sq(n));
+        N = n;
+    }
 	//Copy and Move assignment operators implemented by the compiler:
 	matrix<T>& operator=(matrix const&) = default;
 	matrix<T>& operator=(matrix &&) = default;
@@ -226,31 +230,57 @@ matrix<T>&& operator/( matrix<T>&& m1,  T const& scl) {
 //matrix multiplication 
 template<typename T>
 matrix<T> operator*( matrix<T>  const& m1, matrix<T>  const& m2 ) { 
-	return matrix<T>();
-	/*return matrix<T>(matrix<T>::Idx2{}, m1.dimension(),
+	//return matrix<T>();
+	return matrix<T>(matrix<T>::Idx2(), m1.dimension(),
 						[&](int i, int j) { //2 index constructor, with lambda to represent M_ij = m1_ik*m2*kj
 						T sum = 0.;
 						for(int k = 0; k<m1.dimension(); ++k) {
 							sum += m1(i, k) * m2(k, j);
 						}
 						return sum;
-						});*/
+						});
 }
 //matrix multiplication with &&
-/*template<typename T>
+template<typename T>
 matrix<T>&& operator*( matrix<T>  && m1, matrix<T>  const& m2 ) { 
-	return matrix<T>(matrix<T>::Idx2{}, m1.dimension(),
-						[&](int i, int j) { //2 index constructor, with lambda to represent M_ij = m1_ik*m2*kj
-						T sum = 0.;
-						for(int k = 0; k<_dim; ++k) {
-							sum += m1(i, k) * m2(k, j);
-						}
-						return sum;
-						});
+        int n = m2.dimension();
+        std::vector<T> tmp(n);
+        for(int i=0;i<n;i++) {
+            for(int j=0;j<n;j++) {
+                T sum = 0.0;
+                for(int k=0;k<n;k++) {
+                    sum += m1(i,k)*m2(k,j);
+                }
+                tmp[j] = sum;
+            }
+            for(int l =0; l<n; l++) {
+		        m1(i, l) = tmp[l];
+	        }
+        }
+    return std::move(m1);
 }
 
 template<typename T>
-matrix<T>&& operator*( matrix<T>  && m1, matrix<T>  const& m2 )
+matrix<T>&& operator*( matrix<T>  const& m1, matrix<T>  && m2 ) { 
+        int n = m2.dimension();
+        std::vector<T> tmp(n);
+        for(int i=0;i<n;i++) {
+            for(int j=0;j<n;j++) {
+                T sum = 0.0;
+                for(int k=0;k<n;k++) {
+                    sum += m1(i,k)*m2(k,j);
+                }
+                tmp[j] = sum;
+            }
+            for(int l =0; l<n; l++) {
+		        m1(i, l) = tmp[l];
+	        }
+        }
+    return std::move(m2);
+}
+
+template<typename T>
+matrix<T>&& operator*( matrix<T>  && m1, matrix<T>  && m2 )
 {
         int n = m1.dimension();
         std::vector<T> tmp(n);
@@ -266,55 +296,9 @@ matrix<T>&& operator*( matrix<T>  && m1, matrix<T>  const& m2 )
 		        m1(i, l) = tmp[l];
 	        }
         }
-        
-    }
     return std::move(m1);
 }
 
-
-template<typename T>
-matrix<T>&& operator*( matrix<T>  && m1, matrix<T>  const& m2 )
-{
-        int n = m1.dimension();
-        std::vector<T> tmp(n);
-        for(int i=0;i<n;i++) {
-            for(int j=0;j<n;j++) {
-                T sum = 0.0;
-                for(int k=0;k<n;k++) {
-                    sum += m1(i,k)*m2(k,j);
-                }
-                tmp[j] = sum;
-            }
-            for(int l =0; l<n; l++) {
-		        m2(i, l) = tmp[l];
-	        }
-        }
-        
-    }
-    return std::move(m2);
-}
-
-template<typename T>
-matrix<T>&& operator*( matrix<T>  && m1, matrix<T>  const& m2 )
-{
-        int n = m1.dimension();
-        std::vector<T> tmp(n);
-        for(int i=0;i<n;i++) {
-            for(int j=0;j<n;j++) {
-                T sum = 0.0;
-                for(int k=0;k<n;k++) {
-                    sum += m1(i,k)*m2(k,j);
-                }
-                tmp[j] = sum;
-            }
-            for(int l =0; l<n; l++) {
-		        m2(i, l) = tmp[l];
-	        }
-        }
-        
-    }
-    return std::move(m2);
-}
 
 
 template<typename T> 
@@ -331,4 +315,4 @@ std::ostream& operator<<( std::ostream& s, matrix<T> const& m ) { //output opera
     }
     s << "\n";
     return s;
-}*/
+}

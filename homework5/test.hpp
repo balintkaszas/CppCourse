@@ -5,7 +5,7 @@
 #include "matrix.hpp"
 
 template<typename T>
- bool areEqual(std::vector<T> reference, const  matrix<T> & m, const double precision = 1e-10) {
+ bool areEqual(const std::vector<T> &reference, const  matrix<T> & m, const double precision = 1e-10) {
     
     return std::equal (m.cbegin(), m.cend(), reference.cbegin(), [=](const auto x, const auto y){return std::abs(x - y) < precision;}) ;
 }  
@@ -24,7 +24,7 @@ void TestFunction() {
     }
 
     // init. list constructor, indexing and iterators
-    // if iterators are correct, areEqual() function is enough 
+    // if iterators tests are passed, areEqual() function is enough 
     {
 		matrix<double> m(2,{1., 2., 3., 4.});
         if( m.size() != 4 or m.dimension() != 2) {
@@ -48,6 +48,50 @@ void TestFunction() {
             } 
             std::advance(itWrite, 1);
             std::advance(itRead, 1);
+        }
+    }
+
+    // Testing with std::equal
+    {
+        matrix <double> m(2,{1., 2., 3., 4.});
+        if(!areEqual({1., 2., 3., 4.}, m) ){
+            numErrors ++;
+            std::cout << "std::equal failed \n";
+        }
+    }
+    //Empty constructor
+    {
+        matrix<double> m(2);
+        if( m.size() != 4 or !areEqual({0., 0., 0., 0.}, m)) {
+            numErrors++;
+            std::cout << "Empty constructor failed \n";
+        }
+    }
+    //1d constructor
+    {
+        matrix<double> m(matrix<double>::Idx1{}, 3, [](const auto x){return 2*x;});
+        if( m.size() != 9 or !areEqual({0., 2., 4., 6., 8., 10., 12., 14., 16.}, m)) {
+            numErrors++;
+            std::cout << "1D function constructor failed \n";
+        }
+    }
+
+    //2d constructor
+    {
+        matrix<double> m(matrix<double>::Idx2{}, 3, [](const auto x, const auto y){return 2*x+y;});
+        if( m.size() != 9 or !areEqual({0., 1., 2., 2., 3., 4., 4., 5., 6.}, m)) {
+            numErrors++;
+            std::cout << "2D function constructor failed \n";
+        }
+    }
+    //copy constructor
+        //Test copy constructor and indexing:
+	{
+		matrix<double> a(3,{0., 1., 2., 3., 4., 5., 6., 7., 8., 9., });
+		matrix<double> b{a};
+        if(a.size() != b.size() or !areEqual({0., 1., 2., 3., 4., 5., 6., 7., 8., 9., }, b)) {
+            numErrors++;
+            std::cout << "Copy constructor failed \n";      
         }
     }
     std::cout << "Number of errors is " << numErrors << "\n"; 
