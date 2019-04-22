@@ -75,18 +75,14 @@ class matrix
 
 	//Indexing:
 	T& operator[]( int i ){ return data[i]; }
-    //TESTED
     T const& operator[]( int i ) const { return data[i]; }
-    //TESTED
     T& operator()(int i, int j){return data[N*i+j]; }
-    //TESTED
     T const& operator()(int i, int j) const{return data[N*i+j]; }
 
     //Add assignment operators:
-    //TESTED
 	matrix<T>& operator+= (matrix<T> const& cpy)
 	{
-		detail::transform_Matrix2(*this, cpy, *this, add);
+		detail::transform_matrix2(*this, cpy, *this, add);
 		return *this;
     }
 
