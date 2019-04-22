@@ -6,7 +6,8 @@
 #include <initializer_list>
 #include <cmath>
 #include <ostream>
-
+#include <fstream>
+#include <iterator>
 //Helper functions:
 namespace detail
 {
@@ -143,6 +144,19 @@ class matrix
 	auto cend() const {
 		return data.cend();
 	}
+	void setDim(int newDim)
+    {
+        if(N !=0)
+        {
+            std::cout<<"Cannot resize mtx \n" ;
+        }
+        else
+        {
+            data.resize(sq(newDim));
+            N = newDim;
+        }
+
+    }
 };
 
 //Addition operators 4 versions for all combinations of const& and &&:
@@ -315,7 +329,6 @@ matrix<T>&& operator*( matrix<T>  && m1, matrix<T>  && m2 )
 template<typename T> 
 std::ostream& operator<<( std::ostream& s, matrix<T> const& m ) { //output operator
     int n = m.dimension();
-    //s << "Size: " <<  _dim << "x" << _dim << "\n";
     for(int i=0;i<n;i++)
     {
         for(int j=0;j<n;j++)
@@ -325,5 +338,27 @@ std::ostream& operator<<( std::ostream& s, matrix<T> const& m ) { //output opera
     s << "\n";
     }
     s << "\n";
+    return s;
+}
+
+
+template<typename T> 
+std::istream& operator >> ( std::istream& s, matrix<T> & m ) { //output operator
+    
+	std::vector<T> dataRow;
+	if(s){
+		std::copy( std::istream_iterator<T>(s), std::istream_iterator<T>(), std::back_inserter(dataRow) );
+		int numberRead = static_cast<int>(dataRow.size());
+		int dimension = static_cast<int>(std::sqrt(numberRead));
+		if (sq(dimension) != numberRead) { //Not a sq matrix
+			std::cout << "Unrecognized data format \n";
+			return s;
+		}
+		m.setDim(dimension);
+		std::copy( dataRow.begin(),
+                    dataRow.end(),
+                    m.begin());
+	}
+	else {std::cout << "Stream is unavailable \n";}
     return s;
 }

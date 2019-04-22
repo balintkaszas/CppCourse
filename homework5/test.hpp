@@ -2,6 +2,8 @@
 #pragma once
 #include <iostream>
 #include <cmath>
+#include <sstream>
+#include <string>
 #include "matrix.hpp"
 
 template<typename T>
@@ -66,6 +68,15 @@ void TestFunction() {
         if( m.size() != 4 or !areEqual({0., 0., 0., 0.}, m)) {
             numErrors++;
             std::cout << "Empty constructor failed \n";
+        }
+    }
+    //SetSize
+    {
+        matrix<double> m;
+        m.setDim(3);
+        if( m.size() != 9 or m.dimension() != 3) {
+            numErrors++;
+            std::cout << "SetDim failed \n";
         }
     }
     //1d constructor
@@ -372,5 +383,31 @@ void TestFunction() {
             std::cout << "Matrix multiplication (&&, &&) operator failed \n";   
         }
     }
+    //Excercise 6, << operator
+
+	{
+
+		matrix<double> m(3,{1., 2., 3., 4., 5. ,6., 7., 8., 9.});
+		std::stringstream ss;
+		ss << m;
+		std::string result = ss.str();
+		if(result != "1 2 3 \n4 5 6 \n7 8 9 \n\n") { 
+            numErrors ++ ;
+            std::cout << "<< operator failed \n";
+        }
+	}
+
+    // >> operator
+    {
+
+		matrix<double> m;
+		std::stringstream ss;
+		ss <<  "1 2 3 \n4 5 6 \n7 8 9 \n" ;
+        ss >> m;
+		if(!areEqual({1, 2, 3, 4, 5, 6, 7, 8, 9}, m) ) { 
+            numErrors ++ ;
+            std::cout << ">> operator failed \n";
+        }
+	}
     std::cout << "Number of errors is " << numErrors << "\n"; 
 }
