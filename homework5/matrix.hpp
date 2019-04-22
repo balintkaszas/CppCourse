@@ -68,7 +68,8 @@ class matrix
 	//Default, Copy and Move constructors implemented by the compiler:
 	matrix(): data{},N{0}{} //default const 
 	matrix( matrix const& ) = default; //copy const
-	matrix( matrix && ) = default; //move const
+    matrix(matrix && m):   data{std::move(m.data)},  //move const
+                            N{m.N} {m.N = 0; }
     matrix(int n, std::initializer_list<T> const& il):    data{il}, N{n}{};
 	matrix(int n) { //empty constructor
 		data.resize(sq(n));
@@ -76,8 +77,14 @@ class matrix
     }
 	//Copy and Move assignment operators implemented by the compiler:
 	matrix<T>& operator=(matrix const&) = default;
-	matrix<T>& operator=(matrix &&) = default;
-
+    matrix<T>& operator=(matrix<T> && m) {
+        if (this != &m) {
+            data = std::move(m.data);
+            N = m.N;
+            m.N = 0;
+        }
+        return *this;
+    }	
 	//Indexing:
 	T& operator[]( int i ) { 
 		return data[i];

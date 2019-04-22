@@ -7,7 +7,7 @@
 template<typename T>
  bool areEqual(const std::vector<T> &reference, const  matrix<T> & m, const double precision = 1e-10) {
     
-    return std::equal (m.cbegin(), m.cend(), reference.cbegin(), [=](const auto x, const auto y){return std::abs(x - y) < precision;}) ;
+    return (m.size() == static_cast<int>( reference.size() )) and std::equal (m.cbegin(), m.cend(), reference.cbegin(), [=](const auto x, const auto y){return std::abs(x - y) < precision;}) ;
 }  
 
  
@@ -58,6 +58,7 @@ void TestFunction() {
             numErrors ++;
             std::cout << "std::equal failed \n";
         }
+
     }
     //Empty constructor
     {
@@ -85,13 +86,48 @@ void TestFunction() {
         }
     }
     //copy constructor
-        //Test copy constructor and indexing:
 	{
-		matrix<double> a(3,{0., 1., 2., 3., 4., 5., 6., 7., 8., 9., });
+		matrix<double> a(3,{0., 1., 2., 3., 4., 5., 6., 7., 8. });
 		matrix<double> b{a};
-        if(a.size() != b.size() or !areEqual({0., 1., 2., 3., 4., 5., 6., 7., 8., 9., }, b)) {
+        if(a.size() != b.size() or !areEqual({0., 1., 2., 3., 4., 5., 6., 7., 8.}, b)) {
             numErrors++;
             std::cout << "Copy constructor failed \n";      
+        }
+    }
+    // move constructor 
+    {
+		matrix<double> a(3,{0., 1., 2., 3., 4., 5., 6., 7., 8.});
+		matrix<double> b{std::move(a)};
+        if(a.size() != 0 or b.size() != 9  or !areEqual({0., 1., 2., 3., 4., 5., 6., 7., 8. }, b)) {
+            numErrors++;
+            std::cout << "Move constructor failed \n";      
+        }
+    }
+
+    // assign operators
+    {
+		matrix<double> a(3,{0., 1., 2., 3., 4., 5., 6., 7., 8.});
+		matrix<double> b, c;
+        a = a;
+        if(a.size() != 9 or !areEqual({0., 1., 2., 3., 4., 5., 6., 7., 8. }, a)) {
+            numErrors++;
+            std::cout << "Self assignment failed \n";              
+        }
+
+        a = std::move(a);
+        if(a.size() != 9 or !areEqual({0., 1., 2., 3., 4., 5., 6., 7., 8. }, a)) {
+            numErrors++;
+            std::cout << "Self move assignment failed \n";              
+        } 
+        b = a;
+        if( b.size() != 9  or !areEqual({0., 1., 2., 3., 4., 5., 6., 7., 8. }, b)) {
+            numErrors++;
+            std::cout << "Assignment failed \n";      
+        }
+        c = std::move(a);
+        if(a.size() != 0 or c.size() != 9  or !areEqual({0., 1., 2., 3., 4., 5., 6., 7., 8. }, c)) {
+            numErrors++;
+            std::cout << "Move assignment failed \n";      
         }
     }
     std::cout << "Number of errors is " << numErrors << "\n"; 
