@@ -149,8 +149,7 @@ class matrix
 //Same applies to the two argument operator-
 template<typename T>
 matrix<T> operator+( matrix<T> const& m1, matrix<T> const& m2 ) {
-	matrix<T> result; 
-	result.data.resize(m1.size());
+	matrix<T> result (m1.dimension());
 	detail::transform_matrix2(m1, m2, result, add);
 	return result;
 }
@@ -176,8 +175,7 @@ matrix<T>&& operator+( matrix<T>&& m1, matrix<T>&& m2 ) {
 //subtract operator
 template<typename T>
 matrix<T> operator-( matrix<T> const& m1, matrix<T> const& m2 ) {
-	matrix<T> result; 
-	result.data.resize(m1.size());
+	matrix<T> result (m1.dimension());
 	detail::transform_matrix2(m1, m2, result, sub);
 	return result;
 }
@@ -203,13 +201,15 @@ matrix<T>&& operator-( matrix<T>&& m1, matrix<T>&& m2 ) {
 // multiply/divide by scalar:
 template<typename T>
 matrix<T> operator*( matrix<T>  const& m1,  T const& scl) {
-    matrix<T> result(m1,[scl](auto const& x){ return x * scl; });
+	matrix<T> result (m1.dimension());
+   	detail::transform_matrix1(m1, result, [scl](auto const& x){ return x * scl; });
     return result;
 }
 template<typename T>
 matrix<T> operator*( T const& scl, matrix<T>  const& m1) {
-    matrix<T> result(m1,[scl](auto const& x){ return scl * x; }); 
-    return result;
+	matrix<T> result (m1.dimension());
+   	detail::transform_matrix1(m1, result, [scl](auto const& x){ return scl * x; });
+	return result;
 }
 template<typename T>
 matrix<T>&& operator*( matrix<T>&& m1,  T const& scl) {
@@ -224,7 +224,8 @@ matrix<T>&& operator*(T const& scl, matrix<T>&& m1 ) {
 template<typename T>
 matrix<T> operator/( matrix<T>  const& m1,  T const& scl)
 {
-    matrix<T> result(m1,[scl](auto const& x){ return x / scl; });
+	matrix<T> result (m1.dimension());
+   	detail::transform_matrix1(m1, result, [scl](auto const& x){ return x / scl; });
     return result;
 }
 template<typename T>
@@ -237,15 +238,18 @@ matrix<T>&& operator/( matrix<T>&& m1,  T const& scl) {
 //matrix multiplication 
 template<typename T>
 matrix<T> operator*( matrix<T>  const& m1, matrix<T>  const& m2 ) { 
-	//return matrix<T>();
-	return matrix<T>(matrix<T>::Idx2(), m1.dimension(),
-						[&](int i, int j) { //2 index constructor, with lambda to represent M_ij = m1_ik*m2*kj
-						T sum = 0.;
-						for(int k = 0; k<m1.dimension(); ++k) {
-							sum += m1(i, k) * m2(k, j);
-						}
-						return sum;
-						});
+    int n = m1.dimension();
+    matrix<T> result(n);
+        for(int i=0;i<n;i++) {
+            for(int j=0;j<n;j++) {
+                T sum = 0.0;
+                for(int k=0;k<n;k++) {
+                    sum += m1(i,k)*m2(k,j);
+                }
+                result(i,j) = sum;
+        	}
+		}
+	return result;
 }
 //matrix multiplication with &&
 template<typename T>
@@ -275,12 +279,12 @@ matrix<T>&& operator*( matrix<T>  const& m1, matrix<T>  && m2 ) {
             for(int j=0;j<n;j++) {
                 T sum = 0.0;
                 for(int k=0;k<n;k++) {
-                    sum += m1(i,k)*m2(k,j);
+                    sum += m1(j,k)*m2(k,i);
                 }
                 tmp[j] = sum;
             }
             for(int l =0; l<n; l++) {
-		        m1(i, l) = tmp[l];
+		        m2(l, i) = tmp[l];
 	        }
         }
     return std::move(m2);

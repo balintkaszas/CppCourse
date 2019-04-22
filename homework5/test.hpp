@@ -130,5 +130,247 @@ void TestFunction() {
             std::cout << "Move assignment failed \n";      
         }
     }
+
+    // +=, -=, *=, /= operators
+
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> b(3,{1., 1., 1. ,1., 1., 1., 1., 1., 1.});
+		a += b;
+        if(!areEqual({2., 3., 4., 5.,6., 7., 8., 9., 10.}, a)){
+            numErrors++;
+            std::cout << "+= operator failed \n";   
+        }
+	}
+
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> b(3,{1., 1., 1. ,1., 1., 1., 1., 1., 1.});
+		a -= b;
+        if(!areEqual({0., 1., 2., 3.,4., 5., 6., 7., 8.}, a)){
+            numErrors++;
+            std::cout << "-= operator failed \n";   
+        }
+	}
+
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		a *= 2.5;
+        if(!areEqual({2.5, 5., 7.5, 10. ,12.5, 15., 17.5, 20., 22.5}, a)){
+            numErrors++;
+            std::cout << "*= operator failed \n";   
+        }
+	}
+
+    {
+		matrix<double> a(3,{2.5, 5., 7.5, 10. ,12.5, 15., 17.5, 20., 22.5});
+		a /= 2.5;
+        if(!areEqual({1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.}, a)){
+            numErrors++;
+            std::cout << "/= operator failed \n";   
+        }
+	}
+    // + operator
+    // (const &, const&)
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> b(3,{1., 1., 1. ,1., 1., 1., 1., 1., 1.});
+
+		matrix<double> c = a + b;
+        if(!areEqual({2., 3., 4., 5.,6., 7., 8., 9., 10.}, c)){
+            numErrors++;
+            std::cout << "+ operator (const &, const&) failed \n";   
+        }
+	}
+    // (&&, const&)
+
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> b(3,{1., 1., 1. ,1., 1., 1., 1., 1., 1.});
+
+		matrix<double> c = std::move(a) + b;
+        if(!areEqual({2., 3., 4., 5.,6., 7., 8., 9., 10.}, c)){
+            numErrors++;
+            std::cout << "+ operator (&&, const&) failed \n";   
+        }
+	}
+    // (const&, &&) 
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> b(3,{1., 1., 1. ,1., 1., 1., 1., 1., 1.});
+
+		matrix<double> c = a + std::move(b);
+        if(!areEqual({2., 3., 4., 5.,6., 7., 8., 9., 10.}, c)){
+            numErrors++;
+            std::cout << "+ operator (const&, &&) failed \n";   
+        }
+	}
+
+    // (&&, &&) 
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> b(3,{1., 1., 1. ,1., 1., 1., 1., 1., 1.});
+
+		matrix<double> c = std::move(a) + std::move(b);
+        if(!areEqual({2., 3., 4., 5.,6., 7., 8., 9., 10.}, c)){
+            numErrors++;
+            std::cout << "+ operator (&&, &&) failed \n";   
+        }
+	}
+
+    // - operator
+    // (const &, const&)
+
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> b(3,{1., 1., 1. ,1., 1., 1., 1., 1., 1.});
+
+		matrix<double> c = a - b;
+        if(!areEqual({0., 1., 2., 3.,4., 5., 6., 7., 8.}, c)){
+            numErrors++;
+            std::cout << "- operator (const &, const&) failed \n";   
+        }
+	}
+    
+    // (&&, const&)
+
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> b(3,{1., 1., 1. ,1., 1., 1., 1., 1., 1.});
+
+		matrix<double> c = std::move(a) - b;
+        if(!areEqual({0., 1., 2., 3.,4., 5., 6., 7., 8.}, c)){
+            numErrors++;
+            std::cout << "- operator (&&, const&) failed \n";   
+        }
+	}
+
+    // (const&, &&)
+
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> b(3,{1., 1., 1. ,1., 1., 1., 1., 1., 1.});
+
+		matrix<double> c = a - std::move(b);
+        if(!areEqual({0., 1., 2., 3.,4., 5., 6., 7., 8.}, c)){
+            numErrors++;
+            std::cout << "- operator (const&, &&) failed \n";   
+        }
+	}
+
+    // (&&, &&)
+
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> b(3,{1., 1., 1. ,1., 1., 1., 1., 1., 1.});
+
+		matrix<double> c = std::move(a) - std::move(b);
+        if(!areEqual({0., 1., 2., 3.,4., 5., 6., 7., 8.}, c)){
+            numErrors++;
+            std::cout << "- operator (&&, &&) failed \n";   
+        }
+	}
+
+    // * operator (const &, scalar)
+
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> c = a*2.5;
+        if(!areEqual({2.5, 5., 7.5, 10. ,12.5, 15., 17.5, 20., 22.5}, c)){
+            numErrors++;
+            std::cout << "* operator (const&, scalar) failed \n";   
+        }
+	}
+    // * operator (&&, scalar)
+
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> c = std::move(a)*2.5;
+        if(!areEqual({2.5, 5., 7.5, 10. ,12.5, 15., 17.5, 20., 22.5}, c)){
+            numErrors++;
+            std::cout << "* operator (&&, scalar) failed \n";   
+        }
+	}
+    // * operator (scalar, const&)
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> c = 2.5*a;
+        if(!areEqual({2.5, 5., 7.5, 10. ,12.5, 15., 17.5, 20., 22.5}, c)){
+            numErrors++;
+            std::cout << "* operator (scalar, const&) failed \n";   
+        }
+	}
+    // * operator (scalar, &&)
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+		matrix<double> c = 2.5*std::move(a);
+        if(!areEqual({2.5, 5., 7.5, 10. ,12.5, 15., 17.5, 20., 22.5}, c)){
+            numErrors++;
+            std::cout << "* operator (scalar, &&) failed \n";   
+        }
+	}
+
+    // / operator (const&, scalar)
+    {
+		matrix<double> a(3,{2.5, 5., 7.5, 10. ,12.5, 15., 17.5, 20., 22.5});
+		matrix<double> c = a / 2.5;
+        if(!areEqual({1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.}, c)){
+            numErrors++;
+            std::cout << "/ (const &, scalar) operator failed \n";   
+        }
+    }
+
+    // / operator (&&, scalar)
+    {
+		matrix<double> a(3,{2.5, 5., 7.5, 10. ,12.5, 15., 17.5, 20., 22.5});
+		matrix<double> c = std::move(a) / 2.5;
+        if(!areEqual({1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.}, c)){
+            numErrors++;
+            std::cout << "/ (&&, scalar) operator failed \n";   
+        }
+    }
+
+    // Matrix multiply (const &, const &)
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+        matrix<double> b(3, {2,4, 1., 4., 5., 9.2, 1., 1., 1.});
+        matrix<double> c = a * b;
+        if(!areEqual({13. , 17. ,  22.4, 34.,  47.,  56., 55.,  77., 89.6}, c)){
+            numErrors++;
+            std::cout << "Matrix multiplication (const&, const&) operator failed \n";   
+        }
+    }
+    // Matrix multiply (&&, const &)
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+        matrix<double> b(3, {2,4, 1., 4., 5., 9.2, 1., 1., 1.});
+        matrix<double> c = std::move(a) * b;
+        if(!areEqual({13. , 17. ,  22.4, 34.,  47.,  56., 55.,  77., 89.6}, c)){
+            numErrors++;
+            std::cout << "Matrix multiplication (&&, const&) operator failed \n";   
+        }
+    }
+
+    // Matrix multiply (const&, &&)
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+        matrix<double> b(3, {2,4, 1., 4., 5., 9.2, 1., 1., 1.});
+        matrix<double> c = a * std::move(b);
+        if(!areEqual({13. , 17. ,  22.4, 34.,  47.,  56., 55.,  77., 89.6}, c)){
+            numErrors++;
+            std::cout << "Matrix multiplication (const&, &&) operator failed \n";   
+        }
+    }
+
+    // Matrix multiply (&&, &&)
+    {
+		matrix<double> a(3,{1. , 2. ,  3., 4.,  5.,  6., 7.,  8., 9.});
+        matrix<double> b(3, {2,4, 1., 4., 5., 9.2, 1., 1., 1.});
+        matrix<double> c = std::move(a) * std::move(b);
+        if(!areEqual({13. , 17. ,  22.4, 34.,  47.,  56., 55.,  77., 89.6}, c)){
+            numErrors++;
+            std::cout << "Matrix multiplication (&&, &&) operator failed \n";   
+        }
+    }
     std::cout << "Number of errors is " << numErrors << "\n"; 
 }
