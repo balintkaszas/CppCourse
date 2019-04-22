@@ -1,11 +1,11 @@
 ﻿cmake_minimum_required(VERSION 3.0.0)
-project (vector)
+project (matrix)
 
 if (MSVC)
   string(REGEX REPLACE "/W[0-9]" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 endif (MSVC)
 
-add_executable(vector main.cpp)
+add_executable(matrix main.cpp)
 #add_execuable(hello2 main2.cpp)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17

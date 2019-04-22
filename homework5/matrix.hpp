@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include <algorithm>
 #include <iostream>
@@ -25,7 +26,7 @@ namespace detail
 //Common lambdas:
 inline auto add = [](auto const& x, auto const& y){ return x + y; };
 inline auto sub = [](auto const& x, auto const& y){ return x - y; };
-inline auto sq = [](auto const& x){ return x*x  ; };
+inline auto sq = [](auto const& x){ return x * x  ; };
 
 
 //Large Vector class:
@@ -36,8 +37,8 @@ inline auto sq = [](auto const& x){ return x*x  ; };
 template<typename T>
 class matrix
 {
-    int N;
 	std::vector<T> data;
+    int N;
     public:
     struct Idx1{};
     struct Idx2{};
@@ -68,78 +69,67 @@ class matrix
 	matrix(): data{},N{0}{} //default const 
 	matrix( matrix const& ) = default; //copy const
 	matrix( matrix && ) = default; //move const
-    matrxi(int n, std::initializer_list<T> const& il):    data{il}, N{n}{};
+    matrix(int n, std::initializer_list<T> const& il):    data{il}, N{n}{};
 	//Copy and Move assignment operators implemented by the compiler:
 	matrix<T>& operator=(matrix const&) = default;
 	matrix<T>& operator=(matrix &&) = default;
 
 	//Indexing:
-	T& operator[]( int i ){ return data[i]; }
-    T const& operator[]( int i ) const { return data[i]; }
-    T& operator()(int i, int j){return data[N*i+j]; }
-    T const& operator()(int i, int j) const{return data[N*i+j]; }
+	T& operator[]( int i ) { 
+		return data[i];
+	}
+    T const& operator[]( int i ) const { //read only
+		return data[i];
+	}
+    T& operator()(int i, int j) {
+		return data[N*i+j];
+	}
+    T const& operator()(int i, int j) const { //read only 
+ 		return data[N*i+j]; 
+	}
 
-    //Add assignment operators:
-	matrix<T>& operator+= (matrix<T> const& cpy)
-	{
+    //Add/subtract/mult/div assignment operators:
+	matrix<T>& operator+= (matrix<T> const& cpy) {
 		detail::transform_matrix2(*this, cpy, *this, add);
 		return *this;
     }
-
-	//Add assignment operators:
-	Vector<T>& operator+= (Vector<T> const& cpy)
-	{
-		detail::transform_vector2(*this, cpy, *this, add);
+	matrix<T>& operator-= (matrix<T> const& cpy) {
+		detail::transform_matrix2(*this, cpy, *this, sub);
 		return *this;
-	}
-    T& operator()(int i, int j){ return data[N*i+j]; }
-    T const& operator()(int i, int j) const { return data[N*i+j]; }
-
-	//Subtract assignment operators:
-	Vector<T>& operator-= (Vector<T> const& cpy)
-	{
-		detail::transform_vector2(*this, cpy, *this, sub);
+    }
+	matrix<T>& operator*= (T const& scl) {
+		detail::transform_matrix1(*this, *this, [scl](T const& x){ return x * scl;} );
+		return *this;
+    }
+	matrix<T>& operator/= (T const& scl) {
+		detail::transform_matrix1(*this, *this, [scl](T const& x){ return x / scl;} );
 		return *this;
 	}
 
-	//Multiplication by scalar:
-	Vector<T>& operator*= (T const& scl)
-	{
-		detail::transform_vector1(*this, *this, [=](T const& x){ return x * scl;} );
-		return *this;
-	}
-
-	//Division by scalar:
-	Vector<T>& operator/= (T const& scl)
-	{
-		detail::transform_vector1(*this, *this, [=](T const& x){ return x / scl;} );
-		return *this;
-	}
-
+	
+	// Methods
 	//Number of elements of the Vector:
-	int size()const
-	{
-		return static_cast<int>(data.size());
+	int dimension() const {
+		return static_cast<int>(N);
+	}
+	int size() const {
+		return static_cast<int>(sq(N));
 	}
 
 	//begin and end for compatibility with STL:
-	auto begin()
-	{
+	auto begin() {
 		return data.begin();
 	}
 
-	auto cbegin() const
-	{
+	auto cbegin() const {
 		return data.cbegin();
 	}
 
-	auto end()
-	{
+	auto end() {
 		return data.end();
 	}
 
-	auto cend() const
-	{
+	auto cend() const {
 		return data.cend();
 	}
 };
@@ -147,156 +137,198 @@ class matrix
 //Addition operators 4 versions for all combinations of const& and &&:
 //Same applies to the two argument operator-
 template<typename T>
-Vector<T> operator+( Vector<T> const& v1, Vector<T> const& v2 )
-{
-	Vector<T> result; result.data.resize(v1.data.size());
-	detail::transform_vector2(v1, v2, result, add);
+matrix<T> operator+( matrix<T> const& m1, matrix<T> const& m2 ) {
+	matrix<T> result; 
+	result.data.resize(m1.size());
+	detail::transform_matrix2(m1, m2, result, add);
 	return result;
 }
 
 template<typename T>
-Vector<T>&& operator+( Vector<T>&& v1, Vector<T> const& v2 )
-{
-	detail::transform_vector2(v1, v2, v1, add );
-	return std::move(v1);
+matrix<T>&& operator+( matrix<T>&& m1, matrix<T> const& m2 ) {
+	detail::transform_matrix2(m1, m2, m1, add );
+	return std::move(m1);
 }
 
 template<typename T>
-Vector<T>&& operator+( Vector<T> const& v1, Vector<T>&& v2 )
-{
-	detail::transform_vector2(v1, v2, v2, add );
-	return std::move(v2);
+matrix<T>&& operator+( matrix<T> const& m1, matrix<T>&& m2 ) {
+	detail::transform_matrix2(m1, m2, m2, add );
+	return std::move(m2);
 }
 
 template<typename T>
-Vector<T>&& operator+( Vector<T>&& v1, Vector<T>&& v2 )
-{
-	detail::transform_vector2(v1, v2, v1, add );
-	return std::move(v1);
+matrix<T>&& operator+( matrix<T>&& m1, matrix<T>&& m2 ) {
+	detail::transform_matrix2(m1, m2, m1, add );
+	return std::move(m1);
 }
 
-//-------------
-
+//subtract operator
 template<typename T>
-Vector<T> operator-( Vector<T> const& v1, Vector<T> const& v2 )
-{
-	Vector<T> result; result.data.resize(v1.data.size());
-	detail::transform_vector2(v1, v2, result, sub);
+matrix<T> operator-( matrix<T> const& m1, matrix<T> const& m2 ) {
+	matrix<T> result; 
+	result.data.resize(m1.size());
+	detail::transform_matrix2(m1, m2, result, sub);
 	return result;
 }
 
 template<typename T>
-Vector<T>&& operator-( Vector<T>&& v1, Vector<T> const& v2 )
-{
-	detail::transform_vector2(v1, v2, v1, sub);
-	return std::move(v1);
+matrix<T>&& operator-( matrix<T>&& m1, matrix<T> const& m2 ) {
+	detail::transform_matrix2(m1, m2, m1, sub );
+	return std::move(m1);
 }
 
 template<typename T>
-Vector<T>&& operator-( Vector<T> const& v1, Vector<T>&& v2 )
-{
-	detail::transform_vector2(v1, v2, v2, sub);
-	return std::move(v2);
+matrix<T>&& operator-( matrix<T> const& m1, matrix<T>&& m2 ) {
+	detail::transform_matrix2(m1, m2, m2, sub );
+	return std::move(m2);
 }
 
 template<typename T>
-Vector<T>&& operator-( Vector<T>&& v1, Vector<T>&& v2 )
-{
-	detail::transform_vector2(v1, v2, v1, sub);
-	return std::move(v1);
+matrix<T>&& operator-( matrix<T>&& m1, matrix<T>&& m2 ) {
+	detail::transform_matrix2(m1, m2, m1, sub );
+	return std::move(m1);
 }
 
-//dot product function does not need && versions as memory cannot be reused:
+// multiply/divide by scalar:
 template<typename T>
-T dot( Vector<T>const& v1, Vector<T>const& v2)
+matrix<T> operator*( matrix<T>  const& m1,  T const& scl) {
+    matrix<T> result(m1,[scl](auto const& x){ return x * scl; });
+    return result;
+}
+template<typename T>
+matrix<T> operator*( T const& scl, matrix<T>  const& m1) {
+    matrix<T> result(m1,[scl](auto const& x){ return scl * x; }); 
+    return result;
+}
+template<typename T>
+matrix<T>&& operator*( matrix<T>&& m1,  T const& scl) {
+    detail::transform_matrix1(m1, m1, [scl](T const& x){ return x * scl; });
+    return std::move(m1);   
+}
+template<typename T>
+matrix<T>&& operator*(T const& scl, matrix<T>&& m1 ) {
+    detail::transform_matrix1(m1, m1, [scl](T const& x){ return  scl*x; });
+    return std::move(m1);   
+}
+template<typename T>
+matrix<T> operator/( matrix<T>  const& m1,  T const& scl)
 {
-	return std::inner_product(v1.cbegin(), v1.cend(), v2.cbegin(), static_cast<T>(0));
+    matrix<T> result(m1,[scl](auto const& x){ return x / scl; });
+    return result;
+}
+template<typename T>
+matrix<T>&& operator/( matrix<T>&& m1,  T const& scl) {
+    detail::transform_matrix1(m1, m1, [scl](T const& x){ return x / scl; });
+    return std::move(m1);   
 }
 
-//sqlength function does not need && versions as memory cannot be reused:
-template<typename T>
-T sqlength( Vector<T>const& v )
-{
-	return std::accumulate(v.cbegin(), v.cend(), static_cast<T>(0), [](T const& acc, T const& x){ return acc + x*x; });
-}
 
-//length function does not need && versions as memory cannot be reused:
+//matrix multiplication 
 template<typename T>
-T length( Vector<T>const& v )
-{
-	return std::sqrt(sqlength(v));
+matrix<T> operator*( matrix<T>  const& m1, matrix<T>  const& m2 ) { 
+	return matrix<T>();
+	/*return matrix<T>(matrix<T>::Idx2{}, m1.dimension(),
+						[&](int i, int j) { //2 index constructor, with lambda to represent M_ij = m1_ik*m2*kj
+						T sum = 0.;
+						for(int k = 0; k<m1.dimension(); ++k) {
+							sum += m1(i, k) * m2(k, j);
+						}
+						return sum;
+						});*/
 }
-
-//normalize, scalar multiplication, division needs two versions as they have one vector argument where memory can be reused:
-template<typename T>
-Vector<T> operator*(Vector<T> const& v, T const& scl)
-{
-	Vector<T> result; result.data.resize(v.data.size());
-	detail::transform_vector1(v, result, [=](T const& x){ return x * scl; });
-	return result;
-}
-
-template<typename T>
-Vector<T>&& operator*(Vector<T>&& v, T const& scl)
-{
-	detail::transform_vector1(v, v, [=](T const& x){ return x * scl; });
-	return std::move(v);
-}
-
-template<typename T>
-Vector<T> operator*(T const& scl, Vector<T> const& v)
-{
-	Vector<T> result; result.data.resize(v.data.size());
-	detail::transform_vector1(v, result, [=](T const& x){ return scl * x; });
-	return result;
-}
-
-template<typename T>
-Vector<T>&& operator*(T const& scl, Vector<T>&& v)
-{
-	detail::transform_vector1(v, v, [=](T const& x){ return scl * x; });
-	return std::move(v);
-}
-
-template<typename T>
-Vector<T> operator/(Vector<T> const& v, T const& scl)
-{
-	Vector<T> result; result.data.resize(v.data.size());
-	detail::transform_vector1(v, result, [=](T const& x){ return x / scl; });
-	return result;
-}
-
-template<typename T>
-Vector<T>&& operator/(Vector<T>&& v, T const& scl)
-{
-	detail::transform_vector1(v, v, [=](T const& x){ return x / scl; });
-	return std::move(v);
+//matrix multiplication with &&
+/*template<typename T>
+matrix<T>&& operator*( matrix<T>  && m1, matrix<T>  const& m2 ) { 
+	return matrix<T>(matrix<T>::Idx2{}, m1.dimension(),
+						[&](int i, int j) { //2 index constructor, with lambda to represent M_ij = m1_ik*m2*kj
+						T sum = 0.;
+						for(int k = 0; k<_dim; ++k) {
+							sum += m1(i, k) * m2(k, j);
+						}
+						return sum;
+						});
 }
 
 template<typename T>
-Vector<T> normalize(Vector<T> const& v)
+matrix<T>&& operator*( matrix<T>  && m1, matrix<T>  const& m2 )
 {
-	return v / length(v);
+        int n = m1.dimension();
+        std::vector<T> tmp(n);
+        for(int i=0;i<n;i++) {
+            for(int j=0;j<n;j++) {
+                T sum = 0.0;
+                for(int k=0;k<n;k++) {
+                    sum += m1(i,k)*m2(k,j);
+                }
+                tmp[j] = sum;
+            }
+            for(int l =0; l<n; l++) {
+		        m1(i, l) = tmp[l];
+	        }
+        }
+        
+    }
+    return std::move(m1);
+}
+
+
+template<typename T>
+matrix<T>&& operator*( matrix<T>  && m1, matrix<T>  const& m2 )
+{
+        int n = m1.dimension();
+        std::vector<T> tmp(n);
+        for(int i=0;i<n;i++) {
+            for(int j=0;j<n;j++) {
+                T sum = 0.0;
+                for(int k=0;k<n;k++) {
+                    sum += m1(i,k)*m2(k,j);
+                }
+                tmp[j] = sum;
+            }
+            for(int l =0; l<n; l++) {
+		        m2(i, l) = tmp[l];
+	        }
+        }
+        
+    }
+    return std::move(m2);
 }
 
 template<typename T>
-Vector<T>&& normalize(Vector<T>&& v)
+matrix<T>&& operator*( matrix<T>  && m1, matrix<T>  const& m2 )
 {
-	auto l = length(v);
-	return std::move(v) / l;
+        int n = m1.dimension();
+        std::vector<T> tmp(n);
+        for(int i=0;i<n;i++) {
+            for(int j=0;j<n;j++) {
+                T sum = 0.0;
+                for(int k=0;k<n;k++) {
+                    sum += m1(i,k)*m2(k,j);
+                }
+                tmp[j] = sum;
+            }
+            for(int l =0; l<n; l++) {
+		        m2(i, l) = tmp[l];
+	        }
+        }
+        
+    }
+    return std::move(m2);
 }
 
-template<typename T>
-std::ostream& operator<< (std::ostream& o, Vector<T> const& v)
-{
-	int n = v.size();
-	if( n > 0 )
-	{
-		for(int i=0; i<n-1; ++i)
-		{
-			o << v[i] << "   ";
-		}
-		o << v[n-1];
-	}
-	return o;
-}
+
+template<typename T> 
+std::ostream& operator<<( std::ostream& s, matrix<T> const& m ) { //output operator
+    int n = m.dimension();
+    //s << "Size: " <<  _dim << "x" << _dim << "\n";
+    for(int i=0;i<n;i++)
+    {
+        for(int j=0;j<n;j++)
+        {
+            s << m(i,j) << " ";
+        }
+    s << "\n";
+    }
+    s << "\n";
+    return s;
+}*/

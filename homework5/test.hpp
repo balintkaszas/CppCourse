@@ -2,52 +2,53 @@
 #pragma once
 #include <iostream>
 #include <cmath>
-#include "vector.hpp"
+#include "matrix.hpp"
 
 template<typename T>
- bool isCorrect(const T refX, const T refY, const  Vector2d<T> & V, const double precision = 1e-10) {
-    bool didItPass = true;
-    if(std::abs(V.x - refX) > precision and std::abs(V.x - refY) > precision) {
-        didItPass = false;
-    }
-    return didItPass;
-}   
+ bool areEqual(std::vector<T> reference, const  matrix<T> & m, const double precision = 1e-10) {
+    
+    return std::equal (m.cbegin(), m.cend(), reference.cbegin(), [=](const auto x, const auto y){return std::abs(x - y) < precision;}) ;
+}  
 
+ 
 
 void TestFunction() {
     int numErrors = 0;
+    //Default constructor
+    {
+        matrix<int> m;
+        if( m.size() != 0 or m.dimension() != 0 or m.begin() != m.end()) {
+            numErrors++;
+            std::cout << "Default constructor failed \n";
+        }
+    }
 
-    Vector2d<double> a = {1., 2.};
-    Vector2d<double> b = {3., 4.};
-    a += b;
-    if(!isCorrect<double>(4., 6., a)){numErrors += 1; std::cout << "Error in += operator \n";}
-    a -= b;
-    if(!isCorrect<double>(1., 2., a)){numErrors += 1; std::cout << "Error in -= operator \n";}
-    a *= 2.;
-    if(!isCorrect<double>(2., 4., a)){numErrors += 1; std::cout << "Error in *= operator \n";}
-    a /= 2.;
-    if(!isCorrect<double>(1., 2., a)){numErrors += 1; std::cout << "Error in /= operator \n";}
-
-    Vector2d<double> result;
-    result = a + b;
-    if(!isCorrect<double>(4., 6., result)){numErrors += 1; std::cout << "Error in + operator \n";}
-    result = a - b;
-    if(!isCorrect<double>(-2., -2., result)){numErrors += 1; std::cout << "Error in - operator \n";}
-    result = 2.*a;
-    if(!isCorrect<double>(2., 4., result)){numErrors += 1; std::cout << "Error in left * operator \n";}
-    result = a*2.;
-    if(!isCorrect<double>(2., 4., result)){numErrors += 1; std::cout << "Error in right * operator \n";}
-    result = a/2.;
-    if(!isCorrect<double>(0.5, 1., result)){numErrors += 1; std::cout << "Error in / operator \n";}
-    double dotproduct = dot(a, b);
-    if(std::abs(dotproduct - 11.) > 1e-10){numErrors += 1; std::cout << "Error in dot() function \n";}
-    double len = length(a);
-    if(std::abs(len - std::sqrt(5)) > 1e-10){numErrors += 1; std::cout << "Error in length() function \n";}
-    double sqlen = sqlength(a);
-    if(std::abs(sqlen - 5.) > 1e-10){numErrors += 1; std::cout << "Error in sqlength() function \n";}
-        
-    Vector2d<double> norm = normalize(a);
-    if(!isCorrect<double>(1./std::sqrt(5.), 2./std::sqrt(5.), norm)){numErrors += 1; std::cout << "Error in normalize() function \n";}
-
-    std::cout << "\n Tests finished with " << numErrors << " errors. \n";
+    // init. list constructor, indexing and iterators
+    // if iterators are correct, areEqual() function is enough 
+    {
+		matrix<double> m(2,{1., 2., 3., 4.});
+        if( m.size() != 4 or m.dimension() != 2) {
+            numErrors++;
+            std::cout << "initializer list constructor failed (size mismatch) \n";
+        }
+		if(m[0] != 1. or m[1] != 2. or m[2] != 3. or m[3] != 4.) {
+            numErrors++;
+            std::cout << "initializer list constructor failed (1d indexing) \n";
+        }
+		if(m(0,0) != 1. or m(0,1) != 2. or m(1,0) != 3. or m(1,1) != 4.) {
+            numErrors++;
+            std::cout << "initializer list constructor failed (2d indexing) \n";
+        }
+        auto itWrite = m.begin();
+        auto itRead = m.cbegin();
+        for(int j = 1; j < 5 ; ++j){
+            if(*itWrite != j or *itRead != j) {
+                numErrors++;
+                std::cout << "Iterator failed " << *itWrite << " " << j << "\n";
+            } 
+            std::advance(itWrite, 1);
+            std::advance(itRead, 1);
+        }
+    }
+    std::cout << "Number of errors is " << numErrors << "\n"; 
 }
